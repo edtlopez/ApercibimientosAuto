@@ -1,0 +1,259 @@
+from django.shortcuts import render
+from .models import *
+from .forms import *
+from django.http import HttpResponse 
+from django.http import HttpResponseRedirect, Http404
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from .PorcesarPdf import ProcesarPdfs
+from django.conf import settings
+#from django.utils.encoding import str
+from django.template import Template, Context
+
+#from ProcesarApercibimientos import *
+import re
+import os
+import zipfile
+from xhtml2pdf import pisa
+import shutil
+import datetime
+import commands
+
+
+# Create your views here.
+## Vista principal de las accioes que se pueden realizar.
+#@login_required
+def pdfprin (request):
+	pdf_error_cnt = Faltas_Asistencia.objects.filter(Estado="Error").values().count()
+	return render(request,"pdfges.html",{"pdferrorcont":pdf_error_cnt})
+
+# Sube los pdf o los zip
+#@login_required
+def pdfsubir (request):
+
+	if request.method == 'POST':		
+		form = PdfForms(request.POST,request.FILES)		
+		
+		if form.is_valid():	
+			a = Pdfs()
+			a.NombrePdf = str(datetime.date.today()) + ' PDF - ' + str(Pdfs.objects.all().count()+1)
+			a.Estado = 'SinProcesar'
+			a.FechaSubida = datetime.date.today()
+			a.pdf = request.FILES['pdf']
+			a.save()
+			descomprimir_zip()
+			ProcesarPdfs()
+			MarcarApercibimientos()
+			return HttpResponseRedirect('/')		
+	
+	form = PdfForms()
+	return render(request,'pdfsubir.html',{'form':form})
+
+# Muestra los rejistros con errores para solucionar de manera manual
+
+def error (request):
+	pdf_error = Faltas_Asistencia.objects.filter(Estado="Error").values()
+	return render(request,"error.html",{'pdfs':pdf_error})
+
+# Busca los fichero zip los descomprime y los anade a la tabla pdf sin procesar, despues elimina el zip
+
+def descomprimir_zip ():
+
+	# Limpiando Directorio
+
+	for folder, subfolders, files in os.walk('tmp/'):
+				for file in files:
+					if file.endswith('.pdf'):
+						os.remove('tmp/'+file)
+
+	# descomprimiendo zip
+
+	for folder, subfolders, files in os.walk('pdfs/'):
+		for file in files:
+			if file.endswith('.zip'):
+				comando = 'unzip ' + 'pdfs/' + str(file) + ' -d ' + 'tmp'
+				commands.getoutput(comando)
+				z = Pdfs.objects.filter(pdf='pdfs/'+file)
+				z.delete()
+				commands.getoutput('rm '+'pdfs/'+'\"'+file+'\"')
+
+	# Anadiendo los pdf comprimidos
+
+	for folder, subfolders, files in os.walk('tmp/'):
+		for file in files:
+			if file.endswith('.pdf'):
+				insert = Pdfs()
+				insert.NombrePdf = str(datetime.date.today()) + ' PDF - ' + str(Pdfs.objects.all().count()+1)
+				insert.Estado = 'SinProcesar'
+				insert.pdf = 'pdfs/'+str(file)
+				insert.save()
+				commands.getoutput('cp '+ '\"' +'tmp/'+str(file)+ '\"' + ' pdfs/')
+				commands.getoutput('rm '+'tmp/'+'\"'+str(file)+'\"')	
+
+## Actualiza los rejistro erroneos con la informacion proporcionada mediante el formulario
+
+def erroract (request,pk):
+
+	if request.method == 'POST':		
+		form = PdfForms(request.POST,request.FILES)	
+		if form.is_valid:	
+			act = Faltas_Asistencia.objects.filter(id=pk)
+			act.update(
+				JustificadasHoras = request.POST['JustificadasHoras'],
+				JustifiacdadPorcentaje = request.POST['JustifiacdadPorcentaje'],
+				InjustificadaHoras = request.POST['InjustificadaHoras'],
+				InjustificadasPorcentaje = request.POST['InjustificadasPorcentaje'],
+				Retrasos = 	request.POST['Retrasos'],
+				Estado = "Correcto" )
+			MarcarApercibimientos()
+			return HttpResponseRedirect('/error')
+
+	alumnos = Faltas_Asistencia.objects.filter(id=pk).values()
+	form =  Faltas_Asistencia_Actualizar()
+	return render(request,"erroract.html",{'form':form,'alumno':alumnos})
+
+## Marca cada rejistro de la tabla Faltas_Asistencia con apercibimiento dependiendo si se cumple las condiciones
+def MarcarApercibimientos () :
+	rejistros = Faltas_Asistencia.objects.filter(Estado="Correcto").values()
+	for ele in rejistros :
+		if (ele['HorasLectivas']/ele['TotalPeriodo']) <= 0.2 :
+			if ele['InjustificadasPorcentaje'] >= float(settings.APER_PORCENTAJE_1SEM) :
+				act = Faltas_Asistencia.objects.filter(id=ele['id'])
+				act.update(Estado='Apercibimiento')
+			else:
+				act = Faltas_Asistencia.objects.filter(id=ele['id'])
+				act.delete()
+		else :
+			if ele['InjustificadasPorcentaje'] >= float(settings.APER_PORCENTAJE_MAS_1SEM) :
+				act = Faltas_Asistencia.objects.filter(id=ele['id'])
+				act.update(Estado='Apercibimiento')
+			else:
+				act = Faltas_Asistencia.objects.filter(id=ele['id'])
+				act.delete()
+
+def Apercibimiento_prin (request):
+
+	meses = {1:'Enero',2:'Febrero',3:'Marzo',4:'Abril',5:'Mayo',
+	6:'Junio',7:'Julio',8:'Agosto',9:'Septiembre',
+	10:'Octubre',11:'Noviembre',12:'Diciembre'}
+
+	
+	if request.method == 'POST':
+		a = set()
+		m = set()
+		c = set()		
+		for ele in Faltas_Asistencia.objects.filter(Estado="Apercibimiento").values():
+			a.add(ele['FechaDesde'].year)
+			m.add(ele['FechaDesde'].month)
+			m.add(ele['FechaHasta'].month)
+			c.add(ele['Curso'])		
+		ano = int(request.POST['Ano'])
+		mes = int(request.POST['Mes'])
+		curso = request.POST['Curso']
+		alu = AlumnosAperMes(ano,mes,curso)
+		if not len(alu) == 0 :		
+			# Eliminando informes anteriores
+			for folder, subfolders, files in os.walk('tmp/'):
+				for file in files:
+					if file.endswith('.pdf'):
+						os.remove('tmp/'+file)
+			# Creando informes de cada alumno
+			for alumno in alu:
+				ren = render(request,'informe.html',{'aper':GenerarApercibimientos(ano,mes,curso,alumno),'Alumno':alumno,'anos':ano,'mes':meses[mes],'curso':curso,'AperNull':False})
+				CrearApercibimientos(ren,alumno,curso)
+			# Compimiendo informes para poder ser descargados
+			fantasy_zip = zipfile.ZipFile('pdf/static/report.zip', 'w') 
+			for folder, subfolders, files in os.walk('tmp/'): 
+				for file in files:
+					if file.endswith('.pdf'):
+						fantasy_zip.write(os.path.join(folder, file), file, compress_type = zipfile.ZIP_DEFLATED)
+			fantasy_zip.close()
+			return render(request,"apercibimientosmenu.html",{'anos':a,'mes':m,'curso':c,'AperCreado':True,'AperNull':False})
+
+		else:
+			# Esto se ejecutara en el caso de no encontrar ningun alumno que tenga percebimientos en la asignatura de mes y ano seleccionado.
+			return render(request,"apercibimientosmenu.html",{'anos':a,'mes':m,'curso':c,'AperCreado':False,'AperNull':True,})
+	
+	ProcesarPdfs()
+	MarcarApercibimientos()
+	a = set()
+	m = set()
+	c = set()
+	for ele in Faltas_Asistencia.objects.filter(Estado="Apercibimiento").values():
+		a.add(ele['FechaDesde'].year)
+		m.add(ele['FechaDesde'].month)
+		m.add(ele['FechaHasta'].month)
+		c.add(ele['Curso'])
+	return render(request,"apercibimientosmenu.html",{'anos':a,'mes':m,'curso':c,'AperCreado':False})
+
+
+# Modificando link de descarga con los apercibimientos nuvos generados.
+def CrearApercibimientos(ren,alumno,curso):
+	
+	# Generando documentos html por Alumno	
+	html = ''
+	cont = 0
+	for linea in str(ren):
+		if not cont < 38:
+			html = html + linea
+		cont = cont + 1
+
+	# Generando PDF
+	salida = open('tmp/'+ alumno +'.pdf','w+b')
+	pisa_status = pisa.CreatePDF(str(html),dest=salida)
+	salida.close()		
+
+
+# Alumnos de un curso que han recibido un apercibimiento en una maeria en el mes que se esta procesando.
+def AlumnosAperMes(ano,mes,curso):
+	salida = set()
+	ApercibimientosTodos = Faltas_Asistencia.objects.filter(Estado="Apercibimiento",Curso=curso).values('Alumno','FechaHasta','FechaDesde')
+	for aper in ApercibimientosTodos:
+		if int(aper['FechaDesde'].month) == int(mes) and int(aper['FechaHasta'].month) == int(mes) and int(aper['FechaDesde'].year) == int(ano) and int(aper['FechaHasta'].year) == int(ano) :
+			salida.add(aper['Alumno'])
+	return salida
+
+# Materias en la que el alumnos recibido un apercibimiento en el mes que se esta procesando.
+def MateriasConApercibimientos(ano,mes,curso,alumno):
+	salida = []
+	MateriasConApercibimientos = Faltas_Asistencia.objects.filter(Estado="Apercibimiento",Curso=curso,Alumno=alumno).values('id','Materia','FechaHasta','FechaDesde')
+	for materias in MateriasConApercibimientos:
+		if int(materias['FechaDesde'].month) == int(mes) and int(materias['FechaHasta'].month) == int(mes) and int(materias['FechaDesde'].year) == int(ano) and int(materias['FechaHasta'].year) == int(ano) :
+			salida.append([materias['id'],materias['Materia']])
+	return salida
+
+# Generando curso escolar dependiendo del mes y ano de la consulta
+def Gen_CursoEscolar (ano,mes):	
+	salida = []
+	if mes <= 9 :
+		for r in range(1,mes+1):
+			salida.append([r,ano])
+		for r in range(9,13):
+			salida.append([r,ano-1])
+	else:
+		for r in range(9,mes+1):
+			salida.append([r,ano])
+	return salida
+
+# Contando numeros de apercibimientos
+def GenerarApercibimientos(ano,mes,curso,alu):
+	for ele in MateriasConApercibimientos(ano,mes,curso,alu):
+		contar = 0
+		NumApercibimientos = Faltas_Asistencia.objects.filter(Estado="Apercibimiento",Alumno=alu,Materia=ele[1]).values()
+		for aper in NumApercibimientos:	
+			for fecha in Gen_CursoEscolar(int(ano),int(mes)):
+				if int(aper['FechaDesde'].month) == int(fecha[0]) and int(aper['FechaDesde'].year) == int(fecha[1]) :
+					contar = contar + 1
+		Apercibimiento = Faltas_Asistencia.objects.filter(id=int(ele[0])).values('InjustificadasHoras','InjustificadasPorcentaje')
+		datos = {'Materia':ele[1],'NumAper':str(contar),'InjuHoras':Apercibimiento[0]['InjustificadasHoras'],'InjuPorcen':Apercibimiento[0]['InjustificadasPorcentaje']}
+		return [datos]
+		 
+
+
+
+
+
+	
+
+
+

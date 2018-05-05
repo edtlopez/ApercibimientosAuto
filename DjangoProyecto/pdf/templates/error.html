@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{%block body%}
+
+	{% if PdfErrorCnt != 0 %}
+	<h2> Solucionar Problemas Faltas no Procesables </h2>	
+	<table class="table">
+	    <tr>
+	    	<th> Alumno </th>
+	    	<th> Modulo </th>
+	    	<th> Curso </th>
+	    	<th> Unidad </th>
+	    	<th> Acciones </th>	    	
+	    </tr>
+	    {% for ele in pdfs %}
+	    	<tr>
+		    	<th> {{ ele.Alumno }} </th>
+		    	<th> {{ ele.Materia}} </th>
+		    	<th> {{ ele.Curso }} </th>
+		    	<th> {{ ele.Unidad }} </th>
+		    	<th> <a href="{% url 'erroract' ele.id %}"> Solucion Manual </a> </th>
+	    	</tr>
+	    {% endfor %}
+
+	  </table>
+	</div>
+	 {% endif %}
+
+	 {% if PdfErrorFechaCnt != 0 %}
+	 <h2> Pdf con fechas erroneas. </h2>	
+	 <table class="table">
+		 <tr>
+			 <th> Pdf. </th>
+			 <th> Estado. </th>
+			 <th> Info. </th>
+
+			 	    	
+		 </tr>
+		 {% for ele in PdfErrorFecha %}
+			 <tr>
+				 <th> {{ ele.pdf }} </th>
+				 <th> {{ ele.Estado}} </th>
+				 <th> Pdf NO procesado </th>
+			 </tr>
+		 {% endfor %}
+ 
+	   </table>
+
+	<form action="" method="post" enctype="multipart/form-data">
+	{% csrf_token %} 
+	<input type="submit" value="Limpiar Pdfs" class="btn btn-default" style="margin-top:10px;">
+  	</form>
+
+	 </div>
+
+	
+	 {% endif %}
+
+	 <p style="margin-top:10px" ></p>
+	<h3>{{Mensaje}}</h3>
+
+
+
+{%endblock%}

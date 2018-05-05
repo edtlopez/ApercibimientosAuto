@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+
+{%block error%}
+	{% if pdferrorcont != 0 %}
+		<div class="alert alert-warning" role="alert"> <a href="{% url 'error' %}"> Error al procesar Alumnos (Solucionar problemas)</a> </div>
+	{% endif %}
+	<p></p>
+	{% if FechaError != 0 %}
+	<div class="alert alert-warning" role="alert"> <a href="{% url 'error' %}"> Pdf no procesados : Error de Fecha</a> </div>
+	{% endif %}
+
+{%endblock%}
+
+{%block body%}
+
+	<h2> Inicio. </h2>
+	<div style="margin-left:20px;">
+	<h4> Acciones. </h4>	
+	<p> <span id="subirpdf"> <a href=" {% url 'subir' %} "> Carga de estadisticas de absentismo</a> </span> </p>
+	<p> <span id="modpdf"> <a href="{% url 'ModAper' %}">Modficar apercibimientos</a> </span> </p>
+
+	<h4>Informes.</h4>
+	<p><span id="Apercibimientos" ><a href="{% url 'Apercibimientos' %}">Apercibimientos para alumnos de un Curso</a></span></p> 
+    <p><span id="ApercibimientosTodos"><a href="{% url 'ApercibimientosTodos' %}">Resumen de numeros de apercibimientos para un curso y fecha.</a></span></p>
+	<p><span id="ApercibimientosPorCurso"><a href="{% url 'ApercibimientosPorMaterias' %}">Resumen de apercibimientos por Curso para el pasillo.</a></span></p> 
+	</div>
+	<p></p>
+	<p> <div id="InfoPdf" style="margin-top: 50px" >  </div> </p>
+	
+	
+	<script>
+
+	
+	function PdfSinProcesar () {
+
+	    $.getJSON("/apirest/Pdfs/?format=json",function(data){
+
+			var SubirPdf,ModPdf,InfoPdf,Txt,Aper,AperTodos,AperCurso,Con;
+			Aper = document.getElementById('Apercibimientos');
+			AperTodos = document.getElementById('ApercibimientosTodos');
+			AperCurso = document.getElementById('ApercibimientosPorCurso');
+			SubirPdf = document.getElementById('subirpdf');
+			ModPdf = document.getElementById('modpdf');
+
+			Con = 0;
+
+			for (var a = 0; a < data.length; a++) {			
+				if (data[a]['Estado'] === "SinProcesar"){
+					Con ++;
+				}				
+			}
+
+			if (Con !== 0){
+
+				Txt = "<h2 style='color:red;'>" + "Numeros de PDF por Procesar : " + data.length + "</h2>" + "<p> <h4> Espere a que finalize para generar nuevos informes </h4> </p>";
+				InfoPdf = document.getElementById('InfoPdf').innerHTML = Txt; 
+
+				Aper.setAttribute("class","invisible");
+				AperTodos.setAttribute("class","invisible");
+				AperCurso.setAttribute("class","invisible");
+				ModPdf.setAttribute("class","invisible");
+				SubirPdf.setAttribute("class","invisible");
+			}
+			else{
+				InfoPdf = document.getElementById('InfoPdf').innerHTML = ""; 
+				Aper.removeAttribute("class");
+				AperTodos.removeAttribute("class");
+				AperCurso.removeAttribute("class");
+				ModPdf.removeAttribute("class");
+				SubirPdf.removeAttribute("class");
+			}
+		});
+	}
+
+	setInterval("PdfSinProcesar()",1000);
+	
+	
+	</script>
+ 	
+
+
+{%endblock%}

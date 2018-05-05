@@ -1,0 +1,144 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+	<title></title>
+	<meta name="generator" content="LibreOffice 5.4.5.1 (Linux)"/>
+	<meta name="created" content="2018-02-13T13:28:07.556993244"/>
+	<meta name="changed" content="2018-02-26T13:26:51.339690605"/>
+	<style type="text/css">
+		@page { margin: 2cm }
+		p { margin-bottom: 0.25cm; line-height: 120% }
+		td p { margin-bottom: 0cm; line-height: 120% }
+		h1 { margin-bottom: 0.21cm }
+		h1.western { font-family: "DejaVu Serif", serif }
+		h1.cjk { font-family: "DejaVu Sans"; font-size: 24pt }
+		h1.ctl { font-family: "DejaVu Sans"; font-size: 24pt }
+		a:link { so-language: zxx }
+	</style>
+</head>
+<body lang="es-ES" dir="ltr">
+<h1 class="western" align="center"><font size="7" style="font-size: 50pt">APERCIBIMIENTOS</font>
+</h1>
+<h3 align="center" style="margin-top: 0cm; margin-bottom: 0cm"><font size="5" style="font-size: 20pt">I.E.S
+FERNANDO AQUILAR QUIGNON </font>
+</h3>
+<h3 align="center" style="margin-top: 0cm; margin-bottom: 0cm"><font size="5" style="font-size: 20pt">JEFATURA
+DE ESTUDIOS</font></h3>
+<h3 align="center" style="margin-top: 0cm; margin-bottom: 0cm"><font size="5" style="font-size: 20pt"><u>APERCIBIMIENTO
+POR FALTA DE ASISTENCIA INJUSTIFICADAS </u></font>
+</h3>
+<p style="margin-bottom: 0cm; line-height: 100%"><br/>
+
+</p>
+<table width="665" cellpadding="0" cellspacing="0">
+	<col width="141">
+	<col width="524">
+	<tr>
+		<td width="141" height="28" style="border: none; padding: 0cm">
+			<p><font size="4" style="font-size: 15pt"><b>ALUMNO/A :</b></font></p>
+		</td>
+		<td width="524" style="border: none; padding: 0cm">
+			<p><font size="4" style="font-size: 15pt">{{Alumno}}</font></p>
+		</td>
+	</tr>
+	<tr>
+		<td width="141" style="border: none; padding: 0cm">
+			<p><font size="4" style="font-size: 15pt"><b>CURSO:</b></font></p>
+		</td>
+		<td width="524" style="border: none; padding: 0cm">
+			<p><font size="4" style="font-size: 15pt">{{curso}}</font></p>
+		</td>
+	</tr>
+</table>
+<p style="margin-bottom: 0cm; line-height: 100%"><br/>
+
+</p>
+<p style="margin-bottom: 0cm; line-height: 100%"><font size="4" style="font-size: 15pt"><b>Apercibido
+durante el mes de {{mes}} / {{anos}} en los siquientes modulos/asignaturas.</b></font></p>
+<p style="margin-bottom: 0cm; line-height: 100%"><font size="4" style="font-size: 15pt"><br/>
+</font>
+{%for ele in aper%} 
+</p>
+<table width="667" cellpadding="4" cellspacing="0">
+	<col width="171">
+	<col width="200">
+	<col width="120">
+	<col width="142">
+	<tr valign="top">
+		<td width="171" style="border-top: 1px solid #000000; border-bottom: none; border-left: 1px solid #000000; border-right: none; padding-top: 0.1cm; padding-bottom: 0cm; padding-left: 0.1cm; padding-right: 0cm">
+			<p align="center"><font size="4" style="font-size: 15pt"><b>APERCIBIMIENTO</b></font></p>
+		</td>
+		<td width="200" style="border-top: 1px solid #000000; border-bottom: none; border-left: none; border-right: none; padding-top: 0.1cm; padding-bottom: 0cm; padding-left: 0cm; padding-right: 0cm">
+			<p align="center"><font size="4" style="font-size: 15pt"><b>ASIGNATURA/MODULO</b></font></p>
+		</td>
+		<td width="120" style="border-top: 1px solid #000000; border-bottom: none; border-left: none; border-right: none; padding-top: 0.1cm; padding-bottom: 0cm; padding-left: 0cm; padding-right: 0cm">
+			<p align="center"><font size="4" style="font-size: 15pt"><b>FALTAS
+			INJ</b></font></p>
+		</td>
+		<td width="142" style="border-top: 1px solid #000000; border-bottom: none; border-left: none; border-right: 1px solid #000000; padding-top: 0.1cm; padding-bottom: 0cm; padding-left: 0cm; padding-right: 0.1cm">
+			<p align="center"><font size="4" style="font-size: 15pt"><b>PORCENTAJE</b></font></p>
+		</td>
+	</tr>
+	<tr valign="top">
+		<td width="171" style="border-top: none; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0cm; padding-bottom: 0.1cm; padding-left: 0.1cm; padding-right: 0cm">
+			<p align="center"><font size="4" style="font-size: 15pt">{{ele.NumAper}}</font></p>
+		</td>
+		<td width="200" style="border-top: none; border-bottom: 1px solid #000000; border-left: none; border-right: none; padding-top: 0cm; padding-bottom: 0.1cm; padding-left: 0cm; padding-right: 0cm">
+			<p align="center"><font size="4" style="font-size: 15pt">{{ele.Materia}}</font></p>
+		</td>
+		<td width="120" style="border-top: none; border-bottom: 1px solid #000000; border-left: none; border-right: none; padding-top: 0cm; padding-bottom: 0.1cm; padding-left: 0cm; padding-right: 0cm">
+			<p align="center"><font size="4" style="font-size: 15pt">{{ele.InjuHoras}}</font></p>
+		</td>
+		<td width="142" style="border-top: none; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0cm; padding-bottom: 0.1cm; padding-left: 0cm; padding-right: 0.1cm">
+			<p align="center"><font size="4" style="font-size: 15pt">{{ele.InjuPorcen}}%</font></p>
+		</td>
+	</tr>
+</table>
+{%endfor%}
+<p><font size="4" style="font-size: 15pt"> </font>
+</p>
+<p style="margin-bottom: 0cm; line-height: 100%"><br/>
+
+</p>
+<p style="margin-bottom: 0cm; border-top: none; border-bottom: 1px solid #000000; border-left: none; border-right: none; padding-top: 0cm; padding-bottom: 0.07cm; padding-left: 0cm; padding-right: 0cm; line-height: 100%">
+<br/>
+
+</p>
+<p style="margin-bottom: 0cm; font-weight: normal; line-height: 100%; text-decoration: none">
+<font size="2" style="font-size: 10pt">CORTAR POR AQUI. Extracto del
+ROF: El control en la Educacion Post-Obligatoria.</font></p>
+<p align="justify" style="margin-bottom: 0cm; font-weight: normal; line-height: 100%; text-decoration: none">
+<font size="2" style="font-size: 10pt"><b>Primer apercibimiento:
+</b>Cuando el alumno o una alumna falta sin justificación el 25% *
+de las horas de una materia en mes o el 20% en un trimestre: La
+Jefatura de Estudios notificara por escrito al alumno/a como al tutor
+/a la citada circunstancia. (Si el alumno es menor de edad tambien se
+notificara a la familia). Excepcionalmente, en las asignaturas de una
+hora semanal, el apercebimiento se cursará con el 50% de las faltas
+injustificadas.</font></p>
+<p align="justify" style="margin-bottom: 0cm; line-height: 100%; text-decoration: none">
+<font size="2" style="font-size: 10pt"><b>Segundo apercibimiento:</b>
+<span style="font-weight: normal">Cuando el alumno /a incurre por
+segunda vez en las circustancias descritas anteriormente pierde el
+drecho a la evaluación continua. Sera evaluado en la sesión
+extraodinaria (Septiembre) en el caso de Bachillerato y en la
+evaluación Final en el caso de la Formación Profesional</span></font></p>
+<table width="100%" cellpadding="4" cellspacing="0">
+	<col width="256*">
+	<tr>
+		<td width="100%" valign="top" style="border: 1px solid #000000; padding: 0.1cm">
+			<p style="margin-bottom: 0.1cm; text-decoration: none"><font size="4" style="font-size: 15pt"><b>RECIBÍ
+			APERCIBIMIENTO. FIRMA Y FECHA</b></font></p>
+			<p style="margin-bottom: 0.1cm; text-decoration: none"><font size="4" style="font-size: 15pt"><b>{{mes}}</b></font></p>
+			<p style="text-decoration: none"><font size="4" style="font-size: 15pt"><b>Alumno/a
+			{{Alumno}}</b></font></p>
+		</td>
+	</tr>
+</table>
+<p><br/>
+<br/>
+
+</p>
+</body>
+</html>

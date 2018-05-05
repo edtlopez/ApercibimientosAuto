@@ -1,0 +1,89 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+	<title></title>
+	<meta name="generator" content="LibreOffice 5.1.6.2 (Linux)"/>
+	<meta name="created" content="00:00:00"/>
+	<meta name="changed" content="2018-04-24T00:04:13.603700077"/>
+	<meta name="created" content="00:00:00">
+	<meta name="changed" content="2018-04-24T00:01:10.141658158">
+	<style type="text/css">
+		@page { margin: 2cm }
+		p { margin-bottom: 0.25cm; line-height: 115% }
+		td p { margin-bottom: 0cm; line-height: 115% }
+	</style>
+</head>
+<body lang="es-ES" dir="ltr">
+<p style="line-height: 100%; page-break-before: auto; page-break-after: auto">
+<font size="5" style="font-size: 20pt"><b>IES. FERNANDO AGUILAR
+QUIGNON</b></font></p>
+<p style="line-height: 100%"><b>Informe de alumnos con mas de
+{{NumAper}} Apercibimirntos.</b></p>
+<p style="line-height: 100%"><b>Fecha de Generación del Informe: {{Mes}}/{{Ano}} </b></p>
+<p style="border-top: none; border-bottom: 1px solid #000000; border-left: none; border-right: none; padding-top: 0cm; padding-bottom: 0.05cm; padding-left: 0cm; padding-right: 0cm; text-decoration: none; page-break-before: auto; page-break-after: auto">
+<br/>
+<br/>
+
+</p>
+<p><br/>
+<br/>
+
+</p>
+<table width="100%" cellpadding="5" cellspacing="0" style="page-break-before: auto; page-break-after: auto; page-break-inside: auto">
+	<col width="64*">
+	<col width="64*">
+	<col width="64*">
+	<col width="64*">
+	<tr valign="top">
+		<td width="25%" style="border: none; padding: 0cm">
+			<p align="left" style="font-variant: normal; font-style: normal; text-decoration: none">
+			<font color="#000000"><meta name="created" content="2018-04-02T16:26:14.080000000"><meta name="changed" content="2018-04-02T16:31:11.480000000"><font face="Liberation Serif, serif"><font size="3" style="font-size: 12pt"><b>Alumno</b></font></font></font></p>
+		</td>
+		<td width="25%" style="border: none; padding: 0cm">
+			<p align="left" style="font-variant: normal; font-style: normal; text-decoration: none">
+			<font color="#000000"><font face="Liberation Serif, serif"><font size="3" style="font-size: 12pt"><b>Curso</b></font></font></font></p>
+		</td>
+		<td width="25%" style="border: none; padding: 0cm">
+			<p align="left" style="font-variant: normal; font-style: normal; text-decoration: none">
+			<font color="#000000"><font face="Liberation Serif, serif"><font size="3" style="font-size: 12pt"><b>Modulo</b></font></font></font></p>
+		</td>
+		<td width="25%" style="border: none; padding: 0cm">
+			<p align="left" style="font-variant: normal; font-style: normal; text-decoration: none">
+			<font color="#000000"><font face="Liberation Serif, serif"><font size="3" style="font-size: 12pt"><b>Num
+			Apercebimientos {% for ele in Data %} </b></font></font></font>
+			</p>
+		</td>
+	</tr>
+	<tr valign="top">
+		<td width="25%" style="border: none; padding: 0cm">
+			<p align="left" style="font-variant: normal; font-style: normal; font-weight: normal; text-decoration: none">
+			<br/>
+{{ele.Alumno}} 
+			</p>
+		</td>
+		<td width="25%" style="border: none; padding: 0cm">
+			<p align="left" style="font-variant: normal; font-style: normal; font-weight: normal; text-decoration: none">
+			<br/>
+{{ele.Curso}} 
+			</p>
+		</td>
+		<td width="25%" style="border: none; padding: 0cm">
+			<p align="left" style="font-variant: normal; font-style: normal; font-weight: normal; text-decoration: none">
+			<br/>
+{{ele.Materia}} 
+			</p>
+		</td>
+		<td width="25%" style="border: none; padding: 0cm">
+			<p align="left" style="font-variant: normal; font-style: normal; font-weight: normal; text-decoration: none">
+			<br/>
+{{ele.numaper}} {% endfor %} 
+			</p>
+		</td>
+	</tr>
+</table>
+<p style="margin-bottom: 0cm; line-height: 100%"><br/>
+
+</p>
+</body>
+</html>

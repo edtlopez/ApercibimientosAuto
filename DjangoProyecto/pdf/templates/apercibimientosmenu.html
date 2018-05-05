@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{%block body%}
+
+<script>
+
+    function TodosLosCursos() {
+        var Curso  = document.getElementById('id_Curso');
+        if (Curso.getAttribute('disabled') === 'disabled') {
+            Curso.removeAttribute("disabled");
+        }
+        else{
+            Curso.setAttribute("disabled","disabled");
+        }
+    }    
+    
+</script>
+
+<h2> Apercibimientos para alumnos de un Curso </h2>	
+<h6> Este formulario genera los apercibimientos individuales por alumnos. </h6>
+
+<div class="form-group" style="margin-top:30px;margin-left:20px;">
+	<form enctype="multipart/form-data" method="post" >
+  		{% csrf_token %} 
+ 	
+	<div class="form-group"> <!-- State Button -->
+        <label for="id_Mes" class="control-label">Mes</label>
+        <select class="form-control" id="id_Mes" name="Mes">
+        	{% for ele in mes %}
+           <option value="{{ele}}">{{ele}}</option>
+           {%endfor%}       
+        </select>                    
+    </div>
+  	
+   	<div class="form-group"> <!-- State Button -->
+        <label for="Ano" class="control-label">Año</label>
+        <select class="form-control" id="id_Ano" name="Ano">
+        	{% for ele in anos %}
+           <option value="{{ele}}">{{ele}}</option>
+           {%endfor%}
+        </select>                    
+    </div> <!--
+    <p></p>
+    <div class="checkbox">
+        <label onclick="TodosLosCursos()" ><input name="TodosLosCursos"  type="checkbox" value="True"> <b> Generar apercibimientos de todos los cursos </b> </label>
+    </div>
+    <p></p> -->
+    <div class="form-group"> <!-- State Button -->
+        <label for="id_Curso" class="control-label">Curso</label>
+        <select class="form-control" id="id_Curso" name="Curso">
+        	{% for ele in curso %}
+           <option value="{{ele}}">{{ele}}</option>
+           {%endfor%}
+        </select>                    
+    </div>
+
+        <input type="submit"  value="Generar" class="btn btn-default" style="margin-top:10px;"/>
+	</form>
+</div>
+
+{% if AperCreado %}
+<p style="margin-top:10px" ></p>
+<a href="/static/report.zip"> <h3>Descargar Informe</h3> </a>
+{% endif %}
+
+
+<p style="margin-top:10px" ></p>
+<h3>{{Mensaje}}</h3>
+
+
+
+
+{%endblock%}
+

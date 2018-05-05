@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{%block body%}
+
+<h2> Actualizando Rejistros </h2>	
+
+<div style="margin-top:20px;margin-left:30px">	
+	<h3> Informacion Del Rejistro. </h3>
+	{% for ele in alumno %}
+		<p><h4> Nombre :  {{ele.Alumno}} </h4></p>
+		<p><h4> Materia :  {{ele.Materia}} </h4></p>
+		<p><h4> Unidad :  {{ele.Unidad}} </h4></p>
+		<p><h4> Fecha Inicio :  {{ele.FechaDesde}} </h4></p>
+		<p><h4> Fecha Final :  {{ele.FechaHasta}} </h4></p>
+
+	{% endfor %}
+		
+	
+</div>
+
+<h3> Datos Nuevos </h3>
+
+<div class="form-group" style="margin-top:30px;margin-left:30px">
+	<form action="" method="post" enctype="multipart/form-data">
+  		{% csrf_token %} 
+	  	<p><h4>Horas Justificadas: {{ form.JustificadasHoras }}</h4></p>
+	  	<p><h4>Horas Justificadas Porcentaje: {{ form.JustifiacdadPorcentaje }}</h4></p>
+	  	<p><h4>Horas Injustificadas: {{ form.InjustificadaHoras }}</h4></p>
+	  	<p><h4>Horas Injustificadas Porcentaje: {{ form.InjustificadasPorcentaje }}</h4></p>
+	  	<p><h4>Retrasos: {{ form.Retrasos }}</h4></p>
+        <input type="submit" value="Actualizar" class="btn btn-default" style="margin-top:10px;">
+	</form>
+</div>
+
+
+<p style="margin-top:10px" ></p>
+<h3>{{Mensaje}}</h3>
+
+{%endblock%}
