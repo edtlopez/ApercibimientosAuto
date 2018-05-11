@@ -19,8 +19,8 @@ router.register(r'Pdfs', PdfsApi)
 urlpatterns = [
  
 	url(r'^$', pdfprin ,name='inicio'),
+	url(r'^acercade/$', AcercaDe ,name='acercade'),
 	url(r'^subirpdf/$', pdfsubir ,name='subir'),
-	#url(r'^porcesarpdf/$', procesar ,name='procesar'),
 	url(r'^error/$', error ,name='error'),
 	url(r'^error/actualizar/(?P<pk>\d+)/$', erroract ,name='erroract'),
 	url(r'^geninformesCurso/$', InformePorCursos ,name='Apercibimientos'),

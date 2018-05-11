@@ -11,25 +11,71 @@ import zipfile
 
 class GenInformeCurso :
 		
-	def __init__ (self,ano,mes,curso,request):
+	def __init__ (self,request):
 
-		self.ano = ano
-		self.mes = mes
-		self.curso = curso
-		self.request = request
-		self.AperCurso = Faltas_Asistencia.objects.filter(Curso=self.curso,Estado="Apercibimiento").values()
-		self.__GenCursoEscolar()
-		self.__AperMesCurso()
-		self.__ApercebimientosCursoEscolar()
-		self.__AlumnosMesCurso()
+		self.ano = int(request.POST["Ano"])
+		self.mes = int(request.POST["Mes"])
+		self.Todos = True
 		
-		if not len(self.Alumnos) == 0 :
+		if  request.POST["TipoInforme"] == 'Individual':
+			self.Todos = False
+			self.curso = request.POST["Curso"]
+		
+		self.request = request
+		self.Fin = False
+		
+		# Comprobando si se quiere procesar todos los cursos.
+
+		if self.Todos :
 			
-			self.__CreandoDatosInformePorCurso()
 			self.__EliminandoInformesAntguos()
-			self.__RenderizandoHtml()
+			self.__SacarCursos()
+
+			for Curso in self.Cursos :
+
+				self.curso = Curso
+				self.AperCurso = Faltas_Asistencia.objects.filter(Curso=Curso,Estado="Apercibimiento").values()
+				self.__GenCursoEscolar()
+				self.__AperMesCurso()
+				self.__ApercebimientosCursoEscolar()
+				self.__AlumnosMesCurso()
+			
+				if not len(self.Alumnos) == 0 :
+					
+					self.__CreandoDatosInformePorCurso()
+					self.__RenderizandoHtml()
+					self.Fin = True
+
 			self.__CreandoPDFAgrupado()
 			self.__ComprimiendoInformes()
+		
+
+		# En caso negativo dejo ejecuto los metodos tal y como estavan.
+
+		else:
+		
+			self.AperCurso = Faltas_Asistencia.objects.filter(Curso=self.curso,Estado="Apercibimiento").values()
+			self.__GenCursoEscolar()
+			self.__AperMesCurso()
+			self.__ApercebimientosCursoEscolar()
+			self.__AlumnosMesCurso()
+		
+			if not len(self.Alumnos) == 0 :
+				
+				self.__CreandoDatosInformePorCurso()
+				self.__EliminandoInformesAntguos()
+				self.__RenderizandoHtml()
+				self.__CreandoPDFAgrupado()
+				self.__ComprimiendoInformes()
+				self.Fin = True
+
+	
+
+	def __SacarCursos (self):	
+
+		self.Cursos = set()
+		for ele in Faltas_Asistencia.objects.all().values('Curso'):
+			self.Cursos.add(ele['Curso'])
 
 	def __CreandoPDFAgrupado(self):
 
@@ -108,7 +154,7 @@ class GenInformeCurso :
 			cont = cont + 1
 
 		# Generando PDF
-		salida = open('tmp/'+ alumno +'.pdf','w+b')
+		salida = open('tmp/'+ alumno +' '+ self.curso +'.pdf','w+b')
 		pisa_status = pisa.CreatePDF(str(html),dest=salida)
 		salida.close()		
 
@@ -186,7 +232,9 @@ class InformeTodosCursosClas :
 			cont = cont + 1
 
 		# Generando PDF
-		salida = open('pdf/static/'+ 'InformeTodosLosCursos' +'.pdf','w+b')
+
+		os.remove("pdf/static/InformeTodosLosCursos.pdf")
+		salida = open('pdf/static/InformeTodosLosCursos.pdf','w+b')
 		pisa_status = pisa.CreatePDF(str(html),dest=salida)
 		salida.close()		
 
@@ -261,134 +309,106 @@ class InformePorMaterias :
 	
 		self.mes = int(request.POST["Mes"])
 		self.ano = int(request.POST["Ano"])
-		self.Cursos = set()
-		self.request = request		
+
+		if request.POST["TipoInforme"] == 'Completo':
+			self.Cursos = set(Faltas_Asistencia.objects.values_list("Curso",flat=True))
+
+		else:
+			self.Cursos = [request.POST["Curso"]]
+
+		self.request = request
+		self.InformeGen = False		
 
 		# Metodos a Ejecutar.
 
-		self.__GenCursoEscolar()
-		self.__CursosSearch()
 		self.__EliminandoInformesAntguos()
-		
-		# Separando Por cursos
+		self.__GenCursoEscolar()
 
+		for Curso in self.Cursos:
+			self.__GenerarCabecera(Curso)
+			self.__MateriasCur(Curso)
 
-		for Cur in self.Cursos:
-			self.Materia = set()
-			self.__MateriasSearch(Cur)
-			self.DatosMaterias = {}
+			self.HtmlMaterias = ''
 
-			## Creando los datos para cada materia
+			for Mate in self.Materias:				
+				self.__AlumnosCur(Curso,Mate)
+				self.__RenderMateria(Curso,Mate)
 
-			for Mate in self.Materia:
-				self.__SelectDatabaseMateria(Mate,Cur)
-				self.__AlumnosSearch()
-				self.__CreateDataHtmlMateria()
-		
-		# Generando las tablas con los apercibimirntos de los alumnos por materia.
+			if self.HtmlMaterias != '':
 
-			self.__RenderizandoHtmlMarerias()	
-			self.__RenderCabecera(Cur)
-			self.__JuntarCabeceraTrablas()
-			self.__CrearPDF(Cur)
+				self.PDF = self.Cabecera + self.HtmlMaterias
+				self.__CrearPdf(Curso)
+				self.InformeGen = True
 
-		# Agrupando y comprimiendo los pdf
-
-		self.__CreandoPDFAgrupado()
+		if len(self.Cursos) != 0 :
+			self.__CreandoPDFAgrupado()
 		self.__ComprimiendoInformes()
 
+					
+	def __CrearPdf(self,Curso):
+
+		salida = open('tmp/'+ Curso +'.pdf','w+b')
+		pisa_status = pisa.CreatePDF(str(self.PDF),dest=salida)
+		salida.close()		
+
+
+	def __AlumnosCur (self,curso,Materia):
+
+		self.Alumnos = set()
+		for fecha in self.CursoEscolar :
+			__Alu = Faltas_Asistencia.objects.filter(Materia=Materia,Curso=curso,Estado='Apercibimiento',FechaDesde__year = fecha[1],FechaDesde__month = fecha[0]).values('Alumno')
+			for alu in __Alu:
+				self.Alumnos.add(alu['Alumno'])
+
+	def __Database (self,Curso,Materia,Alumno):
+
+		self.Database = []
+
+		for fecha in self.CursoEscolar :
+			q = Faltas_Asistencia.objects.filter(Alumno=Alumno,Materia=Materia,Curso=Curso,Estado='Apercibimiento',FechaDesde__year = fecha[1],FechaDesde__month = fecha[0]).values()
+			for ele in q :
+				self.Database.append(q)
+
+
+	def __RenderMateria (self,Curso,Materia):
+
+		__datos = []
+		if len(self.Alumnos) != 0 :
+			for Alu in self.Alumnos :
+				self.__Database(Curso,Materia,Alu)
+				__datos.append({'Alumnos':Alu,'NumAper':len(self.Database)})		
 		
-	def __JuntarCabeceraTrablas (self):
+		ren = render(self.request,'materias.html',{'Materia':Materia,'data':__datos})
 
-		for tabla in self.HtmlTablas:
-
-			html = ''
-			cont = 0
-			for linea in str(tabla):
-				if not cont < 38:
-					html = html + linea
-				cont = cont + 1
-
-			self.HtmlCabezera += str(html)
-		self.HtmlCabezera += "</body></html>" 
-
-	def __RenderCabecera (self,Cur):	
-
-		meses = {1:'Enero',2:'Febrero',3:'Marzo',4:'Abril',5:'Mayo',
-		6:'Junio',7:'Julio',8:'Agosto',9:'Septiembre',
-		10:'Octubre',11:'Noviembre',12:'Diciembre'}
-		
-		self.HtmlCabezera = str(render(self.request,'InformePorMaterias.html',{'Curso':Cur,'Mes':meses[self.mes],'Ano':self.ano}))
-
-	def __RenderizandoHtmlMarerias (self):
-		
-		self.HtmlTablas = []
-		for DatosMate in self.DatosMaterias:
-			ren = render(self.request,'materias.html',{'data':self.DatosMaterias[DatosMate],'Materia':DatosMate})
-			self.HtmlTablas.append(ren)
-
-	def __CursosSearch (self):
-	
-		for fecha in self.CursoEscolar:
-			__select = Faltas_Asistencia.objects.filter(FechaDesde__year = fecha[1],FechaDesde__month = fecha[0],Estado="Apercibimiento").values('Curso')
-			for ele in __select :
-				self.Cursos.add(ele['Curso'])
-	
-	
-	def __MateriasSearch (self,Curso):
-
-		for fecha in self.CursoEscolar:
-			__select = Faltas_Asistencia.objects.filter(Curso=Curso,FechaDesde__year = fecha[1],FechaDesde__month = fecha[0],Estado="Apercibimiento").values('Materia')
-			for ele in __select :
-				self.Materia.add(ele['Materia'])
-		
-	def __CrearPDF(self,Curso):
-		
-		# Generando documentos html por Alumno	
 		html = ''
 		cont = 0
-		for linea in self.HtmlCabezera:
+		for linea in str(ren):
 			if not cont < 38:
 				html = html + linea
 			cont = cont + 1
 
-		# Generando PDF
-		salida = open('tmp/'+ Curso +'.pdf','w+b')
-		pisa_status = pisa.CreatePDF(str(html),dest=salida)
-		salida.close()		
-	
-	def __CreateDataHtmlMateria (self):
-		
-		for MA in self.Materia:
-			self.DatosMaterias[MA] = []
-			for AL in self.Alumnos: 
-				self.DatosMaterias[MA].append({'Alumnos':AL,'NumAper':self.__ContarAper(AL,MA)})
+		self.HtmlMaterias += html
+
+	def __MateriasCur (self,curso):
+
+		self.Materias = set()
+		for fecha in self.CursoEscolar :
+			__Mate = Faltas_Asistencia.objects.filter(Curso=curso,Estado='Apercibimiento',FechaDesde__year = fecha[1],FechaDesde__month = fecha[0]).values('Materia')
+			for Mate in __Mate :
+				self.Materias.add(Mate['Materia'])
 
 
-	def __ContarAper (self,Alumno,Materia):
-		
-		__cont = 0
-		for ele in self.DataBase:
-			if ele['Alumno'] == Alumno : 
-				__cont += 1
-		return int(__cont)
+	def __GenerarCabecera(self,curso):
 
-	def __SelectDatabaseMateria(self,Materia,Curso):
+		ren = render(self.request,'InformePorMaterias.html',{'Curso':curso,'Mes':self.mes,'Ano':self.ano})
 
-		self.DataBase = []
-		for fecha in self.CursoEscolar:
-			__select = Faltas_Asistencia.objects.filter(Curso=Curso,Materia=Materia,FechaDesde__year = fecha[1],FechaDesde__month = fecha[0],Estado="Apercibimiento").values()
-			try:
-				self.DataBase.append(__select[0])
-			except IndexError :
-				pass	
-	
-	def __AlumnosSearch (self):
+		self.Cabecera = ''
+		cont = 0
+		for linea in str(ren):
+			if not cont < 38:
+				self.Cabecera = self.Cabecera + linea
+			cont = cont + 1		
 
-		self.Alumnos = set()
-		for ele in self.DataBase :
-			self.Alumnos.add(ele["Alumno"])
-	
 	def __GenCursoEscolar (self):
 
 		self.CursoEscolar = []
@@ -401,7 +421,6 @@ class InformePorMaterias :
 			for r in range(9,self.mes+1):
 				self.CursoEscolar.append([r,self.ano])
 		sorted(self.CursoEscolar)
-						
 
 	def __EliminandoInformesAntguos (self):
 
@@ -410,11 +429,6 @@ class InformePorMaterias :
 					if file.endswith('.pdf'):
 						os.remove('tmp/'+file)
 
-		try:
-			os.remove('pdf/static/report.zip')
-		except OSError :
-			pass
-		
 	def __ComprimiendoInformes (self):
 
 		fantasy_zip = zipfile.ZipFile('pdf/static/report.zip', 'w') 
@@ -422,10 +436,8 @@ class InformePorMaterias :
 			for file in files:
 				if file.endswith('.pdf'):
 					fantasy_zip.write(os.path.join(folder, file), file, compress_type = zipfile.ZIP_DEFLATED)
-		fantasy_zip.close()	
+		fantasy_zip.close()
 
 	def __CreandoPDFAgrupado(self):
 
-		os.system( "pdftk tmp/*.pdf cat output tmp/InformeMateriasAgrupado.pdf" )
-
-	
+		os.system( "pdftk tmp/*.pdf cat output tmp/PdfAgrupado.pdf" )

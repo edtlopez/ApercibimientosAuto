@@ -208,32 +208,36 @@ def InformePorCursos (request):
 	a = set()
 	m = set()
 	c = set()
-	for ele in Faltas_Asistencia.objects.filter(Estado="Apercibimiento").values():
+	for ele in Faltas_Asistencia.objects.filter(Estado="Apercibimiento").values("FechaDesde","FechaHasta","Curso"):
 		a.add(ele['FechaDesde'].year)
 		m.add(ele['FechaDesde'].month)
 		m.add(ele['FechaHasta'].month)
 		c.add(ele['Curso'])
 
-	if request.method == 'POST':
-		
-		ano = int(request.POST['Ano'])
-		mes = int(request.POST['Mes'])
-		curso = request.POST['Curso']
-		sorted(c)
-		if not Faltas_Asistencia.objects.filter(Estado="Error",Curso=curso).values().count() > 0 :
-			In = GenInformeCurso(ano,mes,curso,request)			
-			if len(In.Alumnos) == 0:			
+	sorted(c)
+	sorted(m)
+	sorted(a)
+
+	if request.method == 'POST':	
+
+		try:
+			Error = Faltas_Asistencia.objects.filter(Estado="Error",Curso=request.POST["Curso"]).values().count()
+		except :
+			Error = Faltas_Asistencia.objects.filter(Estado="Error").values().count()
+
+		if not int(Error) > 0 :
+			In = GenInformeCurso(request)			
+			if not In.Fin :			
 				return render(request,"apercibimientosmenu.html",{'anos':a,'mes':m,'curso':c,'AperCreado':False,'Mensaje':'No Existe Apercibimientos'})		
 	
 		else:
 			return render(request,"apercibimientosmenu.html",{'anos':a,'mes':m,'curso':c,'AperCreado':False,'Mensaje':'Existen erroes en el curso a procesar, porfavor solucione antes los problemas'})		
 
 		return render(request,"apercibimientosmenu.html",{'anos':a,'mes':m,'curso':c,'AperCreado':True,'Mensaje':''}) 	
-	
+		
 
 	if request.method == 'GET':
 
-		sorted(c)
 		ProcesarPdfs().start()
 		return render(request,"apercibimientosmenu.html",{'anos':a,'mes':m,'curso':c,'AperCreado':False})
 
@@ -250,20 +254,22 @@ def InformeTodosCursos (request):
 		m.add(ele['FechaDesde'].month)
 		m.add(ele['FechaHasta'].month)
 		c.add(ele['Curso'])	
+	
+	sorted(c)
+	sorted(m)
+	sorted(a)
 
 	if request.method == 'POST':
 			
 		ano = int(request.POST['Ano'])
 		mes = int(request.POST['Mes'])
 		In = InformeTodosCursosClas(request)
-		sorted(c)	
 		if len(In.data) == 0 :
 			return render(request,"apercibimientosmenutodos.html",{'anos':a,'mes':m,'curso':c,'AperCreado':False,'Mensaje':"No Existe datos procesables"})
 		return render(request,"apercibimientosmenutodos.html",{'anos':a,'mes':m,'curso':c,'AperCreado':True,'Mensaje':""})	
 
 	if request.method == 'GET':	
 
-		sorted(c)
 		ProcesarPdfs().start()	
 		return render(request,"apercibimientosmenutodos.html",{'anos':a,'mes':m,'curso':c,'AperCreado':False})
 
@@ -275,30 +281,41 @@ def AperPorMaterias (request):
 
 	a = set()
 	m = set()
-	for ele in Faltas_Asistencia.objects.filter(Estado="Apercibimiento").values('FechaDesde','FechaHasta'):
+	c = set()
+	for ele in Faltas_Asistencia.objects.filter(Estado="Apercibimiento").values('FechaDesde','FechaHasta','Curso'):
 		a.add(ele['FechaDesde'].year)
 		m.add(ele['FechaDesde'].month)
 		m.add(ele['FechaHasta'].month)
+		c.add(ele['Curso'])
+
+	sorted(m)
+	sorted(a)
+	sorted(c)
 	
 	if request.method == 'GET':
 		ProcesarPdfs().start()
-		return render(request,"MenuAperMes.html", {'anos':a,'mes':m})
+		return render(request,"MenuAperMes.html", {'anos':a,'mes':m,'curso':c})
 	
 	if request.method == 'POST':
 		Gen = InformePorMaterias(request)	
 		try:
-			if len(Gen.Materia) == 0 :
-				return render(request,"MenuAperMes.html", {'anos':a,'mes':m,'AperCreado':False,'Mensaje':"No Existe datos procesables"})
+			if not Gen.InformeGen:
+				return render(request,"MenuAperMes.html", {'curso':c,'anos':a,'mes':m,'AperCreado':False,'Mensaje':"No Existe datos procesables"})
 			else:
-				return render(request,"MenuAperMes.html", {'anos':a,'mes':m,'AperCreado':True})
+				return render(request,"MenuAperMes.html", {'curso':c,'anos':a,'mes':m,'AperCreado':True})
 
 		except AttributeError :
-			return render(request,"MenuAperMes.html", {'anos':a,'mes':m,'AperCreado':False,'Mensaje':"No Existe datos procesables"})
+			return render(request,"MenuAperMes.html", {'curso':c,'anos':a,'mes':m,'AperCreado':False,'Mensaje':"No Existe datos procesables"})
+
+
+def AcercaDe (request):
+	return render(request,"acercade.html")
+
 
 
 # Vista Api
 class FlatasApi (viewsets.ModelViewSet):
-	queryset = Faltas_Asistencia.objects.filter(Estado="Apercibimiento")
+	queryset = Faltas_Asistencia.objects.filter(Estado='Apercibimiento')
 	serializer_class = SerializerFaltasAsistencia
 
 

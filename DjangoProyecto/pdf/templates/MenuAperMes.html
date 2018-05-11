@@ -2,7 +2,19 @@
 
 {% block body %}
 
-<h2> Resumen Alumnos Apercibidos por materia. </h2>	
+<script>     
+
+    function DisableCurso(){
+        var objeto = document.getElementById("id_Curso").setAttribute("disabled","disabled");
+    }
+    
+    function EnableCurso(){
+        var objeto = document.getElementById("id_Curso").removeAttribute("disabled");
+    }
+    
+    </script>
+
+<h2> Informe de apercibimientos para el pasillo. </h2>	
 <h6> Este formulario genera un listado con los Alumnos apercibidos por materia y el numero de apercibimientos desde la fecha introducida. </h6>
 
 <div class="form-group" style="margin-top:30px;margin-left:20px;">
@@ -16,8 +28,7 @@
            <option value="{{ele}}">{{ele}}</option>
            {%endfor%}       
         </select>                    
-    </div>
-  	
+    </div>  	
   	<div class="form-group"> <!-- State Button -->
         <label for="Ano" class="control-label">Año</label>
         <select class="form-control" id="id_Ano" name="Ano">
@@ -25,18 +36,42 @@
            <option value="{{ele}}">{{ele}}</option>
            {%endfor%}
         </select>                    
+    </div> 
+  
+   <div class="form-check">
+        <label>
+            <input type="radio" name="TipoInforme"  onclick="DisableCurso()" value="Completo" checked> <span class="label-text">Generar Informe de todos los cursos</span>
+        </label>
     </div>
-        <input type="submit" value="Generar" class="btn btn-default" style="margin-top:10px;"/>
+    <div class="form-check">
+        <label>
+            <input type="radio" name="TipoInforme" onclick="EnableCurso()" value="Individual" > <span class="label-text">Generar informe de un curso</span>
+        </label>
+    </div>  
+     <p></p> 
+    <div id="CursoForm"></div> 
+    <div class="form-group"> <!-- State Button -->
+        <label for="Curso" class="control-label">Cursos</label>
+        <select class="form-control" id="id_Curso" name="Curso" disabled>
+            {% for ele in curso %}
+        <option value="{{ele}}">{{ele}}</option>
+        {%endfor%}
+        </select>                    
+    </div>  
+
+
+    
+
+     <input type="submit" value="Generar" class="btn btn-default" style="margin-top:10px;"/>
 	</form>
 </div>
 
 {% if AperCreado %}
-<p style="margin-top:10px" ></p>
-<a href="/static/report.zip"> <h3>Descargar Informe</h3> </a>
+<p style="margin-top:10px" >
+<a style="margin-left:20px;" href="/static/report.zip"> <h3 style="margin-left:20px;" >Descargar Informe</h3> </a> </p>
 {% endif %}
 
+<p style="margin-top:10px;" ></p>
+<h3 style="margin-left:20px;" >{{Mensaje}}</h3>
 
-<p style="margin-top:10px" ></p>
-<h3>{{Mensaje}}</h3>
-
-{% endblock %}
+{%endblock%}

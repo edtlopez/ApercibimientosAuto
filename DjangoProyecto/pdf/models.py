@@ -37,7 +37,7 @@ class Faltas_Asistencia (models.Model):
 	Estado = models.CharField(max_length=50)
 
 	def __str__ (self):
-		return  self.Alumno + ' , ' + self.Curso + ' , ' + self.Materia + ' , ' + str(self.InjustificadasPorcentaje)
+		return  self.Alumno + ' , ' + self.Curso + ' , ' + self.Materia + ' , ' + str(self.FechaDesde) + ' , ' + str(self.FechaHasta)
 
 	def __unicode__(self):
 		return u'Proposal for: %s' % self.id
@@ -50,7 +50,8 @@ class Faltas_Asistencia (models.Model):
 class SerializerFaltasAsistencia (serializers.ModelSerializer):
 	class Meta:
 		model = Faltas_Asistencia
-		fields = "__all__"
+		#fields = "__all__"
+		fields = '__all__'
 
 
 class PdfsSerializer (serializers.ModelSerializer):
