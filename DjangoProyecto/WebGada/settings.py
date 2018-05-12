@@ -160,3 +160,10 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     )
 }
+
+# Version de la aplicacion
+VERSION = '1.0 Estable'
+
+# Tiempo de espera para cerrar la sesion abierta.
+SESSION_COOKIE_AGE = 600
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True 

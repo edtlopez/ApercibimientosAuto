@@ -111,8 +111,8 @@ def error (request):
 	if request.method == 'POST':
 
 		PdfErrorFecha = Pdfs.objects.filter(Estado="FechaError")		
-		for ele in PdfErrorFecha.value("pdf"):
-			os.remove(ele)
+		for ele in PdfErrorFecha.values("pdf"):
+			os.remove(ele['pdf'])
 		PdfErrorFecha.delete()
 		return HttpResponseRedirect('/error')	
 
@@ -309,7 +309,7 @@ def AperPorMaterias (request):
 
 
 def AcercaDe (request):
-	return render(request,"acercade.html")
+	return render(request,"acercade.html",{'version':str(settings.VERSION)})
 
 
 

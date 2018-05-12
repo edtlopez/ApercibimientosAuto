@@ -154,7 +154,7 @@ class GenInformeCurso :
 			cont = cont + 1
 
 		# Generando PDF
-		salida = open('tmp/'+ alumno +' '+ self.curso +'.pdf','w+b')
+		salida = open('tmp/'+ self.curso + ' ' + alumno + '.pdf','w+b')
 		pisa_status = pisa.CreatePDF(str(html),dest=salida)
 		salida.close()		
 
@@ -376,7 +376,10 @@ class InformePorMaterias :
 		if len(self.Alumnos) != 0 :
 			for Alu in self.Alumnos :
 				self.__Database(Curso,Materia,Alu)
-				__datos.append({'Alumnos':Alu,'NumAper':len(self.Database)})		
+				__Meses = ''
+				for ele in self.Database:
+					__Meses += str(ele[0]['FechaDesde'].month) + ', '
+				__datos.append({'Alumnos':Alu,'NumAper':len(self.Database),'Meses':str(__Meses)})		
 		
 		ren = render(self.request,'materias.html',{'Materia':Materia,'data':__datos})
 
