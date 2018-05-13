@@ -21,6 +21,6 @@ Automatización de apercibimientos para I.E.S Fernando Aguilar Quignon
   
  # Licencia.
  
-  GPL Version 3
+  GNU Version 3
   
   
