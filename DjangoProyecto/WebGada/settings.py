@@ -165,5 +165,5 @@ REST_FRAMEWORK = {
 VERSION = '1.0 Estable'
 
 # Tiempo de espera para cerrar la sesion abierta.
-SESSION_COOKIE_AGE = 600
-SESSION_EXPIRE_AT_BROWSER_CLOSE = True 
+#SESSION_COOKIE_AGE = 600
+#SESSION_EXPIRE_AT_BROWSER_CLOSE = True 
