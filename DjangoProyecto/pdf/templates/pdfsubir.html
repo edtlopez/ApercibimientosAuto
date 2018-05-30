@@ -6,22 +6,15 @@
 		<form action="" method="post" enctype="multipart/form-data">
 	  		{% csrf_token %} 
 		  	{{ form.pdf }}
-	        <input type="submit" value="Subir" onclick="MensajeDeTranquilidad()" class="btn btn-default" style="margin-top:10px;"/>
+	        <input type="submit" value="Subir"  class="btn btn-default" style="margin-top:10px;"/>
 		</form>
 	</div>
 
-	<div id="MensajeTranquilidad"  style="margin-top:20px;" >  </div>
+	<div id="MensajeTranquilidad"  style="margin-top:20px;" > <h4 style="color=red" > (Se admiten ficheros pdf individuales, y archivos zip con pdf que no contengan carpetas) </h4> </div>
 
 <script>
 
 
-function MensajeDeTranquilidad () {
-
-	var texto = "<h2 style='color:red;' >  !! Se estan procesando los PDF espere a ser rediriguido ¡¡ </h2>" ;
-	document.getElementById("MensajeTranquilidad").innerHTML = texto;
-
-
-}
 
 
 </script>
