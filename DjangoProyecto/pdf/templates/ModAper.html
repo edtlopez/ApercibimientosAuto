@@ -9,7 +9,7 @@
               {% csrf_token %} 
 
 <div class="form-group"> <!-- State Button -->
-    <label for="id_Curso" class="control-label">Cursos</label>
+    <label class="control-label">Cursos</label>
     <select class="form-control" id="id_Mes" name="Curso">
         {% for ele in curso %}
        <option  onclick="BuscarAlumnos('{{ele}}')" value="{{ele}}">{{ele}}</option>
@@ -18,8 +18,8 @@
 </div>
 
 <div class="form-group"> <!-- State Button -->
-    <label for="id_Alumno" class="control-label">Alumnos</label>
-    <select class="form-control" id="id_Alumno" name="Alumno" disabled>
+    <label class="control-label">Alumnos</label>
+    <select class="form-control" id="id_Alumno" name="Alumno" disabled="disabled">
         
     </select> 
 
@@ -98,6 +98,9 @@ function BuscarAlumnos (Curso) {
         return salida;
     }
 
+    document.getElementById("id_Alumno").innerHTML="";
+    Alumnos = [];    
+
     // Recoriendo el Json en busca de los alumnos que corespondan con la materia selecionada
 
     $.getJSON("/apirest/FaltasAsistencia/?format=json",function(data){
@@ -107,20 +110,21 @@ function BuscarAlumnos (Curso) {
                     Alumnos.push(data[i]["Alumno"]);
             }          
         }
-    });
-
 
     // Creando Html con cada Alumno y Desbloqueando el boton de buscar
-
 
     var texto = '';
     for (let a = 0; a < Alumnos.length; a++) {
         texto = texto + " " + "<option value=\"" + Alumnos[a] + "\"" + " onclick='BuscarEnable()'>" + Alumnos[a] + "</option>";        
     }
-    document.getElementById("id_Alumno").innerHTML = "";    
+
+    //console.log(texto);
+
     document.getElementById("id_Alumno").innerHTML = texto;    
     document.getElementById("id_Alumno").removeAttribute("disabled");   
-}
+
+
+    });}
 
 // Desbloquea el boton buscar.
 
