@@ -10,9 +10,9 @@
 
 <div class="form-group"> <!-- State Button -->
     <label class="control-label">Cursos</label>
-    <select class="form-control" id="id_Mes" name="Curso">
+    <select class="form-control" id="id_Curso" name="Curso">
         {% for ele in curso %}
-       <option  onclick="BuscarAlumnos('{{ele}}')" value="{{ele}}">{{ele}}</option>
+       <option  id="BuscarAlumnos" value="{{ele}}">{{ele}}</option>
        {%endfor%}       
     </select> 
 </div>
@@ -25,7 +25,7 @@
 
 </div>
 
-<input type="submit" value="Buscar" class="btn btn-default" id="Buscar" style="margin-top:10px;"/ disabled>
+<input type="submit" value="Buscar" class="btn btn-default" id="Buscar" style="margin-top:10px;" disabled="disabled">
 </form>
 
 <p></p> 
@@ -52,7 +52,7 @@
           <th>{{ele.FechaDesde}}</th>
           <th>{{ele.FechaHasta}}</th>
           <th>{{ele.Estado}}</th>
-          <th> <input type="checkbox" class="checkbox" name="{{ele.id}}" value="Apercibimiento" onclick="IgnorarSumbit()" /> </th>
+          <th> <input type="checkbox" id="Aper" class="checkbox" name="{{ele.id}}" value="Apercibimiento" /> </th>
         </tr>
         {%endfor%}
 
@@ -62,75 +62,80 @@
           <th>{{ele.FechaDesde}}</th>
           <th>{{ele.FechaHasta}}</th>
           <th>{{ele.Estado}}</th>
-          <th> <input type="checkbox" class="checkbox" name="{{ele.id}}" value="Igonorar" onclick="IgnorarSumbit()" /> </th>
+          <th> <input type="checkbox" id="Aper"  class="checkbox" name="{{ele.id}}" value="Igonorar"  /> </th>
         </tr>
         {%endfor%}
 
 </table>
 
-<input type="submit" value="Cambiar Apercibimientos" class="btn btn-default" id="Ignorar" style="margin-top:10px;"/ disabled>
+<input type="submit" value="Cambiar Apercibimientos" class="btn btn-default" id="Ignorar" style="margin-top:10px;" disabled="disabled">
 </form>
 
 <script>
+// Agregando atributo de bloqueo a los controles con jquery 
+$(document).ready(function(){
+
+  $("#Ignorar").attr('disabled','disabled');
+  $("#Buscar").attr('disabled','disabled');
+  $("#id_Alumno").attr('disabled','disabled');
+
+});
+// Creando peticion get a la api para crear 
+$("#id_Curso").change(function(){
+
+  var Curso;
+  Curso = this.value;
+
+  console.log(Curso);
  
- // Desbloquea el boton Ignorar Apercibimientos
-function IgnorarSumbit () {
-    document.getElementById("Ignorar").removeAttribute("disabled");  
-}
+  $.getJSON("/apirest/FaltasAsistencia/?format=json",function(data){
 
-// Bloqueamos los componentes para preservar un orden.
-document.getElementById("Ignorar").setAttribute("disabled","disabled");
-document.getElementById("Buscar").setAttribute("disabled","disabled");
-document.getElementById("id_Alumno").setAttribute("disabled","disabled");
-var Alumnos = [];
+    var Alumnos = [] ;  
+    // Comrpobar Duplicados
+    Array.prototype.unique=function(a){
+    return function(){return this.filter(a)}}(function(a,b,c){return c.indexOf(a,b+1)<0
+  });
 
-function BuscarAlumnos (Curso) {
-
-    // Esta funcion impide que se introduzca un alumno repetido dentro del formulario
-
-    function repetido (Alumno,Alumnos) {
-        var salida = true;
-        for (let a = 0; a < Alumnos.length; a++) {
-            if (Alumnos[a] === Alumno){
-                salida = false;
-            }        
-        }
-        return salida;
+  $.each(data,function(i,item){
+    if (data[i].Curso === Curso){
+      Alumnos.push(data[i].Alumno);
     }
 
-    document.getElementById("id_Alumno").innerHTML="";
-    Alumnos = [];    
+  });
 
-    // Recoriendo el Json en busca de los alumnos que corespondan con la materia selecionada
+  Alumnos = Alumnos.unique();
+  var texto = '';
 
-    $.getJSON("/apirest/FaltasAsistencia/?format=json",function(data){
-    for (let i = 0; i < data.length; i++) {
-        if (data[i]["Curso"] === Curso ){
-            if (repetido(data[i]["Alumno"],Alumnos))
-                    Alumnos.push(data[i]["Alumno"]);
-            }          
-        }
+  $.each(Alumnos,function(i,item){
+    texto = texto + " " + "<option value=\""+ Alumnos[i]+ "\" id=\"id_Alumno\" "+"\"" + ">" + Alumnos[i] + "</option>";        
+    });
 
-    // Creando Html con cada Alumno y Desbloqueando el boton de buscar
+  $("#id_Alumno").html("");
+  $("#id_Alumno").html(texto);    
 
-    var texto = '';
-    for (let a = 0; a < Alumnos.length; a++) {
-        texto = texto + " " + "<option value=\"" + Alumnos[a] + "\"" + " onclick='BuscarEnable()'>" + Alumnos[a] + "</option>";        
-    }
+  $(document).ready(function(){
+    $("#id_Alumno").removeAttr("disabled");
+  });  
 
-    //console.log(texto);
+}); 
+ 
+});
 
-    document.getElementById("id_Alumno").innerHTML = texto;    
-    document.getElementById("id_Alumno").removeAttribute("disabled");   
+// Desbloqueo boton buscar al seleccionar alumno.
+
+$("#id_Alumno").change(function(){  
+  $(document).ready(function(){
+      $("#Buscar").removeAttr("disabled");
+    });  
+});
+
+$(":checkbox").change(function(){  
+  $(document).ready(function(){
+        $("#Ignorar").removeAttr("disabled");
+  });  
+});
 
 
-    });}
-
-// Desbloquea el boton buscar.
-
-function BuscarEnable(){
-    document.getElementById("Buscar").removeAttribute("disabled");   
-}
 </script>
             
 {%endblock%}
